@@ -10,32 +10,26 @@
 # Compile the server
 FROM golang:alpine AS builder
 
-# Create the folder structure for app source (app)
-RUN mkdir -p /app
-
 # Work in the app folder
 WORKDIR /app
 
 # Copy the source code and assets files
-COPY main.go /app
-COPY go.mod /app
-COPY go.sum /app
+COPY main.go go.mod go.sum ./
 
 # Build the executable
 RUN go build -o BonzomaticServer
 
 ##############################################################################
 # Final stage (wrap the compiled server in a linux alpine image ready for run)
-FROM alpine:latest
-
-# Create a folder for executable
-RUN mkdir -p /app
+FROM alpine:3.22
 
 # Work in the app folder
 WORKDIR /app
 
 # Copy the executable built during the previous stage
-COPY --from=builder /app/BonzomaticServer /app
+COPY --from=builder /app/BonzomaticServer .
+
+EXPOSE 9000
 
 # Launch the server
-CMD ["./BonzomaticServer"]
+CMD ["/app/BonzomaticServer"]
